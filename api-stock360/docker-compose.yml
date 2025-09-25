@@ -1,0 +1,42 @@
+services:
+  users-service:
+    build: ./services/users-service
+    container_name: users-service
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@${USERS_DB}:${DB_PORT}/${USERS_TABLE}
+    depends_on:
+      users-db:
+        condition: service_healthy
+
+  # items-service:
+  #   build: ./services/items-service
+  #   container_name: items-service
+  #   ports:
+  #     - "8002:8000"
+  #   environment:
+  #     - DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@{ITEMS_DB}db:${DB_PORT}/${ITEMS_TABLE}
+  #   depends_on:
+  #     - items-db
+
+  # Postgres databases per service
+  users-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${USERS_TABLE}
+    ports:
+      - "${USERS_PORT}:${DB_PORT}"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d ${USERS_TABLE}"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  users_data: {}
+  # items_data: {}
