@@ -1,17 +1,19 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from motor.motor_asyncio import AsyncIOMotorClient
+from fastapi import FastAPI
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+MONGO_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+def init_db(app: FastAPI):
+    if not MONGO_URL:
+        raise ValueError("DATABASE_URL not set")
 
-Base = declarative_base()
+    client = AsyncIOMotorClient(MONGO_URL)
+    app.mongodb_client = client
+    db_name = os.getenv("USERS_DB")
+    if not db_name:
+        raise ValueError("USERS_DB not set")
+    app.mongodb = client[db_name]
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def close_db(app: FastAPI):
+    app.mongodb_client.close()

@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String
-from .database import Base
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 
-class User(Base):
-    __tablename__ = "users"
+class User(BaseModel):
+    id: Optional[str]
+    name: str
+    email: EmailStr
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    email = Column(String, unique=True, index=True)
-
-# In order to add more tables to database just change class name and/or fields
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
