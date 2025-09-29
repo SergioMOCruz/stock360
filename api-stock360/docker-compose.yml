@@ -1,32 +1,52 @@
 services:
+  # ==================
+  # Auth service
+  # ==================
+  auth-service:
+    build: ./services/auth-service
+    container_name: auth-service
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env 
+    environment:
+      - DATABASE_URL=mongodb://${DB_USER}:${DB_PASS}@mongo:${DB_PORT}/${AUTH_DB}?authSource=admin
+      - AUTH_DB=${AUTH_DB}
+    depends_on:
+      mongo:
+        condition: service_healthy
+        
+  # ==================
+  # Users service
+  # ==================
   users-service:
     build: ./services/users-service
     container_name: users-service
     ports:
       - "8001:8000"
+    env_file:
+      - ./.env
     environment:
-      - DATABASE_URL=mongodb://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${USERS_DB}?authSource=admin
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
+      - DATABASE_URL=mongodb://${DB_USER}:${DB_PASS}@mongo:${DB_PORT}/${USERS_DB}?authSource=admin
       - USERS_DB=${USERS_DB}
     depends_on:
-      users-db:
+      mongo:
         condition: service_healthy
 
-  users-db:
+  # ==================
+  # Shared MongoDB
+  # ==================
+  mongo:
     image: mongo:6
-    container_name: users-db
+    container_name: mongo
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
-      MONGO_INITDB_DATABASE: ${USERS_DB}
     ports:
-      - "${USERS_PORT}:${DB_PORT}"
+      - "${DB_PORT}:${DB_PORT}"
     volumes:
-      - users_data:/data/db
+      - mongo_data:/data/db
     healthcheck:
       test: ["CMD", "mongosh", "--username", "${DB_USER}", "--password", "${DB_PASS}", "--eval", "db.adminCommand('ping')"]
       interval: 5s
@@ -34,4 +54,4 @@ services:
       start_period: 10s
 
 volumes:
-  users_data: {}
+  mongo_data: {}
