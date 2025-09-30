@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from .database import init_db, close_db
-from .routes.users import router as users_router
+from .routes.auth import router as auth_router
 
-app = FastAPI(title="Users Service")
+app = FastAPI(title="Auth Service")
 
 @app.on_event("startup")
 async def startup_event():
@@ -14,6 +14,6 @@ async def shutdown_event():
 
 @app.get("/")
 def health():
-    return {"status": "ok", "service": "users"}
+    return {"status": "ok", "service": "auth"}
 
-app.include_router(users_router, prefix="/users")
+app.include_router(auth_router, prefix="/auth")

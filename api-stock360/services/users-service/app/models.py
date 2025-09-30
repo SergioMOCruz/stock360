@@ -7,5 +7,11 @@ class User(BaseModel):
     email: EmailStr
 
 class UserCreate(BaseModel):
+    id: Optional[str]
     name: str
     email: EmailStr
+    role: str
+
+class UserInToken(BaseModel):
+    sub: str 
+    role: str
