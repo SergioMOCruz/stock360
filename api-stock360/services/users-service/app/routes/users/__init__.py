@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from . import post, get, put, delete
+from . import post, get
 
 router = APIRouter()
 router.include_router(post.router, tags=["users"])

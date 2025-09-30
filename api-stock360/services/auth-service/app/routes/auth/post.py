@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, FastAPI
-from ..models import LoginRequest, TokenResponse, UserCreate, UserInDB
-from ..security import create_access_token, hash_password, verify_password 
+from app.models import LoginRequest, TokenResponse, UserCreate, UserInDB
+from app.security import create_access_token, hash_password, verify_password 
 from bson import ObjectId
 import httpx
 
