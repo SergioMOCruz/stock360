@@ -1,6 +1,6 @@
 services:
   # ==================
-  # Auth service
+  # Auth service 1
   # ==================
   auth-service:
     build: ./services/auth-service
