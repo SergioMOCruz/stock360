@@ -7,7 +7,7 @@ import httpx
 router = APIRouter()
 
 def get_app() -> FastAPI:
-    from ..main import app
+    from app.main import app
     return app
 
 @router.post("/register", response_model=UserInDB)
