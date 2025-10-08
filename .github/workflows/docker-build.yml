@@ -4,9 +4,13 @@ on:
   push:
     branches: [ main ]
     tags:
-      - 'v*.*.*' 
+      - 'v*.*.*'
+    paths:
+      - 'api-stock360/services/**'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'api-stock360/services/**'
 
 jobs:
   build-and-push:
@@ -25,19 +29,20 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        working-directory: ./services/${{ matrix.service }}
+        working-directory: ./api-stock360/services/${{ matrix.service }}
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run lint
-        working-directory: ./services/${{ matrix.service }}
+        working-directory: ./api-stock360/services/${{ matrix.service }}
         run: |
           pip install flake8
-          flake8 app --max-line-length=120
+          # Assuming the source code is in an 'app' directory within the service folder
+          flake8 . --max-line-length=120 
 
       - name: Run tests
-        working-directory: ./services/${{ matrix.service }}
+        working-directory: ./api-stock360/services/${{ matrix.service }}
         run: |
           echo "Sem testes definidos ainda"
 
@@ -50,14 +55,16 @@ jobs:
       - name: Set Docker tag
         id: vars
         run: |
-          TAG=$(echo "${GITHUB_REF#refs/tags/}" | sed 's/^v//')
-          if [[ "$TAG" == "" ]]; then TAG="latest"; fi
+          # Use GITHUB_REF_NAME to get branch name or tag name without the prefix
+          TAG=$(echo "${GITHUB_REF_NAME}" | sed 's/^v//')
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then TAG="pr-${GITHUB_SHA::7}"; fi # Use short SHA for PRs
+          if [[ "${TAG}" == "main" ]]; then TAG="latest"; fi # Keep 'latest' for main branch pushes
           echo "TAG=$TAG" >> $GITHUB_ENV
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./services/${{ matrix.service }}
+          context: ./api-stock360/services/${{ matrix.service }}
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:${{ env.TAG }}
