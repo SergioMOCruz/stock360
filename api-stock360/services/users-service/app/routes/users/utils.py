@@ -1,16 +1,19 @@
-from fastapi import Depends, HTTPException, Security
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, APIKeyHeader
 import os
-from app.security import decode_token
+
 from app.models import UserInToken
+from app.security import decode_token
+from fastapi import Depends, HTTPException, Security
+from fastapi.security import (APIKeyHeader, HTTPAuthorizationCredentials,
+                              HTTPBearer)
 
 API_KEY = os.getenv("API_KEY")
 oauth2_scheme = HTTPBearer(auto_error=False)
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
+
 def get_current_user(
     token: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
-    api_key: str = Security(api_key_header)
+    api_key: str = Security(api_key_header),
 ):
     if api_key and api_key == API_KEY:
         return UserInToken(sub="api_key_user", role="admin")

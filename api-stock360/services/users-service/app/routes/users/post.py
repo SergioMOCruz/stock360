@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from app.models import User, UserCreate
 from app.routes.users.utils import get_current_user
+from fastapi import APIRouter, Depends, FastAPI, HTTPException
 
 router = APIRouter()
 
+
 def get_app() -> FastAPI:
     from app.main import app
+
     return app
+
 
 @router.post("/", response_model=User, include_in_schema=False)
 async def create_user(user: UserCreate, app: FastAPI = Depends(get_app)):

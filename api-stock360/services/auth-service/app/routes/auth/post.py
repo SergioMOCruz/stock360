@@ -1,14 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, FastAPI
-from app.models import LoginRequest, TokenResponse, UserCreate, UserInDB
-from app.security import create_access_token, hash_password, verify_password 
-from bson import ObjectId
 import httpx
+from bson import ObjectId
+from fastapi import APIRouter, Depends, FastAPI, HTTPException
+
+from app.models import LoginRequest, TokenResponse, UserCreate, UserInDB
+from app.security import create_access_token, hash_password, verify_password
 
 router = APIRouter()
 
+
 def get_app() -> FastAPI:
     from app.main import app
+
     return app
+
 
 @router.post("/register", response_model=UserInDB)
 async def register(user: UserCreate, app: FastAPI = Depends(get_app)):
@@ -33,7 +37,12 @@ async def register(user: UserCreate, app: FastAPI = Depends(get_app)):
             async with httpx.AsyncClient() as client:
                 await client.post(
                     "http://users-service:8000/users/",
-                    json={"id": created["id"], "name": user.name, "email": user.email, "role": "user"}
+                    json={
+                        "id": created["id"],
+                        "name": user.name,
+                        "email": user.email,
+                        "role": "user",
+                    },
                 )
 
             return UserInDB(**created)
@@ -46,9 +55,11 @@ async def register(user: UserCreate, app: FastAPI = Depends(get_app)):
 @router.post("/login", response_model=TokenResponse)
 async def login(request: LoginRequest, app: FastAPI = Depends(get_app)):
     user = await app.mongodb["users"].find_one({"email": request.email})
-    
-    if not user or not verify_password(request.password, user["password"]): 
+
+    if not user or not verify_password(request.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token({"sub": str(user["_id"]), "role": user.get("role", "user")})
+    token = create_access_token(
+        {"sub": str(user["_id"]), "role": user.get("role", "user")}
+    )
     return TokenResponse(access_token=token)

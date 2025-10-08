@@ -1,29 +1,35 @@
-from fastapi import FastAPI
-from .database import init_db, close_db
-from .routes.users import router as users_router
-from prometheus_client import make_asgi_app, Counter, Histogram
-from starlette.requests import Request
 import time
+
+from fastapi import FastAPI
+from prometheus_client import Counter, Histogram, make_asgi_app
+from starlette.requests import Request
+
+from .database import close_db, init_db
+from .routes.users import router as users_router
 
 app = FastAPI(title="Users Service")
 
 SERVICE_NAME = "users-service"
 
 REQUESTS_TOTAL = Counter(
-    'http_requests_total', 'Total HTTP Requests',
-    ['method', 'endpoint', 'status_code', 'service']
+    "http_requests_total",
+    "Total HTTP Requests",
+    ["method", "endpoint", "status_code", "service"],
 )
 
 REQUEST_ERRORS_TOTAL = Counter(
-    'http_error_requests_total', 'Total HTTP Error Requests',
-    ['method', 'endpoint', 'status_code', 'service']
+    "http_error_requests_total",
+    "Total HTTP Error Requests",
+    ["method", "endpoint", "status_code", "service"],
 )
 
 REQUEST_LATENCY = Histogram(
-    'http_request_duration_seconds', 'HTTP Request Latency',
-    ['method', 'endpoint', 'service'],
-    buckets=[0.05, 0.1, 0.3, 0.5, 1, 2, 5]
+    "http_request_duration_seconds",
+    "HTTP Request Latency",
+    ["method", "endpoint", "service"],
+    buckets=[0.05, 0.1, 0.3, 0.5, 1, 2, 5],
 )
+
 
 @app.middleware("http")
 async def add_prometheus_metrics(request: Request, call_next):
@@ -37,13 +43,19 @@ async def add_prometheus_metrics(request: Request, call_next):
     except Exception as e:
         status_code = 500
         REQUEST_ERRORS_TOTAL.labels(
-            method=method, endpoint=endpoint, status_code=status_code, service=SERVICE_NAME
+            method=method,
+            endpoint=endpoint,
+            status_code=status_code,
+            service=SERVICE_NAME,
         ).inc()
         raise e
     else:
         if 400 <= status_code < 600:
             REQUEST_ERRORS_TOTAL.labels(
-                method=method, endpoint=endpoint, status_code=status_code, service=SERVICE_NAME
+                method=method,
+                endpoint=endpoint,
+                status_code=status_code,
+                service=SERVICE_NAME,
             ).inc()
 
     REQUESTS_TOTAL.labels(
@@ -57,19 +69,24 @@ async def add_prometheus_metrics(request: Request, call_next):
 
     return response
 
+
 metrics_app = make_asgi_app()
 app.mount("/metrics", metrics_app)
+
 
 @app.on_event("startup")
 async def startup_event():
     init_db(app)
 
+
 @app.on_event("shutdown")
 async def shutdown_event():
     close_db(app)
 
+
 @app.get("/")
 def health():
     return {"status": "ok", "service": "users"}
+
 
 app.include_router(users_router, prefix="/users")
