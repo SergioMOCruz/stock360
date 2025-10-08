@@ -95,8 +95,6 @@ services:
     image: prom/alertmanager
     volumes:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    env_file:
-      - .env
     ports:
       - "9093:9093"
 
