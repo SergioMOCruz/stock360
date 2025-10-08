@@ -1,6 +1,6 @@
 services:
   # ==================
-  # Auth service 1
+  # Auth service
   # ==================
   auth-service:
     build: ./services/auth-service
@@ -53,5 +53,53 @@ services:
       retries: 5
       start_period: 10s
 
+  # ==================
+  # Prometheus
+  # ==================
+  prometheus:
+    image: prom/prometheus:main
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - auth-service
+      - users-service
+    restart: unless-stopped
+
+  # ==================
+  # Grafana 
+  # ==================
+  grafana:
+    image: grafana/grafana:main
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASS}
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # ==================
+  # Alertmanager
+  # ==================
+  alertmanager:
+    image: prom/alertmanager
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    env_file:
+      - .env
+    ports:
+      - "9093:9093"
+
 volumes:
   mongo_data: {}
+  grafana-data: {}

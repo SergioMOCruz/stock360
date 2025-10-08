@@ -6,3 +6,4 @@ pydantic[email]
 passlib[bcrypt]
 passlib[argon2]
 httpx
+prometheus-client
