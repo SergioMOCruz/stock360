@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: smtp.gmail.com:587
+      smtp_from: ${SMTP_FROM}
+      smtp_auth_username: ${SMTP_FROM}
+      smtp_auth_password: ${SMTP_PASSWORD}
+
+    route:
+      receiver: "email"
+
+    receivers:
+      - name: "email"
+        email_configs:
+          - to: ${SMTP_PASSWORD}
+            send_resolved: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      containers:
+        - name: alertmanager
+          image: prom/alertmanager:latest
+          args:
+            - "--config.file=/etc/alertmanager/alertmanager.yml"
+          ports:
+            - containerPort: 9093
+          env:
+            - name: SMTP_FROM
+              value: $(SMTP_FROM)
+            - name: SMTP_PASSWORD
+              value: $(SMTP_PASSWORD)
+            - name: SMTP_TO_EMAIL
+              value: $(SMTP_TO_EMAIL)
+          volumeMounts:
+            - name: alertmanager-config-volume
+              mountPath: /etc/alertmanager
+      volumes:
+        - name: alertmanager-config-volume
+          configMap:
+            name: alertmanager-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager-service
+spec:
+  type: NodePort
+  selector:
+    app: alertmanager
+  ports:
+    - port: 9093
+      targetPort: 9093
+      nodePort: 30903
