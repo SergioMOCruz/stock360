@@ -20,6 +20,7 @@ class UserInToken(BaseModel):
     sub: str
     role: str
 
+
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None

@@ -5,16 +5,18 @@ from typing import Dict, Any
 
 router = APIRouter()
 
+
 def get_app() -> FastAPI:
     from app.main import app
-    
+
     return app
+
 
 @router.put("/{user_id}", response_model=UserResponse)
 async def update_user(user_id: str, updates: UserUpdate, app: FastAPI = Depends(get_app)):
     try:
         object_id = ObjectId(user_id)
-    except:
+    except Exception: 
         raise HTTPException(status_code=400, detail="Invalid User ID format")
 
     update_data: Dict[str, Any] = updates.dict(exclude_none=True)
@@ -37,4 +39,3 @@ async def update_user(user_id: str, updates: UserUpdate, app: FastAPI = Depends(
         return UserResponse(**updated_user)
     else:
         raise HTTPException(status_code=500, detail="Failed to retrieve updated user")
-    
