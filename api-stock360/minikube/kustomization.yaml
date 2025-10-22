@@ -13,3 +13,8 @@ configMapGenerator:
   - name: env-config
     envs:
       - .env
+
+secretGenerator:
+  - name: mongo-secret
+    envs:
+      - mongo-creds.env
