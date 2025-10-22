@@ -16,7 +16,7 @@ def get_app() -> FastAPI:
 async def update_user(user_id: str, updates: UserUpdate, app: FastAPI = Depends(get_app)):
     try:
         object_id = ObjectId(user_id)
-    except Exception: 
+    except Exception:
         raise HTTPException(status_code=400, detail="Invalid User ID format")
 
     update_data: Dict[str, Any] = updates.dict(exclude_none=True)
