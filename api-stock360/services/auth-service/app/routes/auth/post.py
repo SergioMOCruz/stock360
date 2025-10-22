@@ -36,7 +36,7 @@ async def register(user: UserCreate, app: FastAPI = Depends(get_app)):
 
             async with httpx.AsyncClient() as client:
                 await client.post(
-                    "http://users-service:8000/users/",
+                    "http://users-service:80/users/",
                     json={
                         "id": created["id"],
                         "name": user.name,
@@ -59,7 +59,6 @@ async def login(request: LoginRequest, app: FastAPI = Depends(get_app)):
     if not user or not verify_password(request.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token(
-        {"sub": str(user["_id"]), "role": user.get("role", "user")}
-    )
-    return TokenResponse(access_token=token)
+    token = create_access_token(data={"sub": user["email"], "role": user["role"]})
+
+    return {"access_token": token, "token_type": "bearer"}
