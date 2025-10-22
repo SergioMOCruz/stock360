@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
-from . import get, post
+from . import get, post, put
 
 router = APIRouter()
 router.include_router(post.router, tags=["users"])
+router.include_router(put.router, tags=["users"])
 router.include_router(get.router, tags=["users"])

@@ -12,11 +12,11 @@ data:
           - targets: ['localhost:9090']
       - job_name: 'auth-service'
         static_configs:
-          - targets: ['auth-service:8000']
+          - targets: ['auth-service:80']
         metrics_path: '/metrics'
       - job_name: 'users-service'
         static_configs:
-          - targets: ['users-service:8000']
+          - targets: ['users-service:80']
         metrics_path: '/metrics'
     rule_files:
       - "alert.rules.yml"
