@@ -14,10 +14,6 @@ class UserResponse(BaseModel):
         json_encoders = {}
 
 
-class UserInDB(UserResponse):
-    password: str
-
-
 class UserCreate(BaseModel):
     name: str
     email: EmailStr

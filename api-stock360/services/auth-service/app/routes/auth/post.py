@@ -2,7 +2,7 @@ import httpx
 from bson import ObjectId
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 
-from app.models import LoginRequest, TokenResponse, UserCreate, UserInDB
+from app.models import LoginRequest, TokenResponse, UserCreate, UserResponse
 from app.security import create_access_token, hash_password, verify_password
 
 router = APIRouter()
@@ -14,7 +14,7 @@ def get_app() -> FastAPI:
     return app
 
 
-@router.post("/register", response_model=UserInDB)
+@router.post("/register", response_model=UserResponse)
 async def register(user: UserCreate, app: FastAPI = Depends(get_app)):
     existing = await app.mongodb["users"].find_one({"email": user.email})
     if existing:
@@ -45,7 +45,7 @@ async def register(user: UserCreate, app: FastAPI = Depends(get_app)):
                     },
                 )
 
-            return UserInDB(**created)
+            return UserResponse(**created)
         else:
             raise Exception("User inserted but failed to retrieve immediately after.")
     else:
@@ -59,6 +59,6 @@ async def login(request: LoginRequest, app: FastAPI = Depends(get_app)):
     if not user or not verify_password(request.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token(data={"sub": user["email"], "role": user["role"]})
+    token = create_access_token(data={"sub": user["_id"], "role": user["role"]})
 
     return {"access_token": token, "token_type": "bearer"}

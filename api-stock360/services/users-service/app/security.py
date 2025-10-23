@@ -11,7 +11,6 @@ def decode_token(token: str):
         payload = jwt.decode(
             token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": True}
         )
-        print("Decoded payload:", payload)
         return payload
     except JWTError as e:
         print("JWT decode error:", e)
