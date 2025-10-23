@@ -2,13 +2,13 @@ groups:
   - name: system_alerts
     rules:
       - alert: HighCPUUsage
-        expr: rate(process_cpu_seconds_total{job="prometheus"}[30s]) > 0.5
+        expr: rate(process_cpu_seconds_total{job=~"auth-service|users-service"}[30s]) > 0.5
         for: 30s 
         labels:
           severity: warning
         annotations:
-          summary: "Prometheus Process High CPU usage detected (TEST)"
-          description: "Prometheus process CPU usage has been above 50% of a single core for more than 30 seconds."
+          summary: "Auth Service or Users Service Process High CPU usage detected"
+          description: "Auth Service or Users Service process CPU usage has been above 50% of a single core for more than 30 seconds."
 
       - alert: HighMemoryUsage
         expr: process_resident_memory_bytes > 500000000
