@@ -8,6 +8,8 @@ resources:
   - dep-alertmanager.yaml
   - dep-grafana.yaml
   - dep-prometheus.yaml
+  - hpa-auth-service.yaml
+  - hpa-users-service.yaml
 
 configMapGenerator:
   - name: env-config
