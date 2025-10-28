@@ -7,7 +7,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Auth Service or Users Service Process High CPU usage detected"
+          summary: "Auth Service or User Service Process High CPU usage detected"
           description: "Auth Service or Users Service process CPU usage has been above 50% of a single core for more than 30 seconds."
 
       - alert: HighMemoryUsage
