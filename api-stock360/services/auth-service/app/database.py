@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 MONGO_URL = os.getenv("DATABASE_URL")
 
-
+# Test
 def init_db(app: FastAPI):
     if not MONGO_URL:
         raise ValueError("DATABASE_URL not set")
